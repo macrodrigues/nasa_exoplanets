@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 import math
 import dash
 import plotly.graph_objects as go
@@ -17,7 +18,7 @@ yaxis_options = [
     {'label':'Orbital Period', 'value':df.columns[8]},
     {'label':'Orbit Semi-Major Axis', 'value':df.columns[12]},
     {'label':'Planet Radius (Earth Radius)', 'value':df.columns[16]},
-    {'label':'Jupyter Radius (Earth Radius)', 'value':df.columns[20]}]
+    {'label':'Jupyter Radius', 'value':df.columns[20]}]
 
 values = []
 keys = []
@@ -31,6 +32,8 @@ dict_yaxis = dict(zip(keys, values))
 app = dash.Dash()
 
 app.layout = html.Div([
+                html.Div([
+                    html.Img(src='https://exoplanetarchive.ipac.caltech.edu/images/nsted_banner.jpg')]),
                 html.Div([
                     dcc.Dropdown(
                         id='year-picker', 
@@ -57,7 +60,6 @@ app.layout = html.Div([
 
 def update_figure(selected_year, selected_yaxis):
     filt_df = df[df['disc_year'] == selected_year]
-    header = dict_yaxis[selected_yaxis]
     traces = []
     for method in filt_df['discoverymethod'].unique():
         df_by_method = filt_df[filt_df['discoverymethod'] == method]
@@ -69,7 +71,7 @@ def update_figure(selected_year, selected_yaxis):
                         sizeref = 80),
                     text=df_by_method['pl_bmasse'].apply(lambda x: 0 if math.isnan(x) else x),
                     mode = 'markers',
-                    meta = header,
+                    meta = dict_yaxis[selected_yaxis],
                     hovertemplate='<br>Planet: %{x}<br>%{meta}: %{y}<br>Mass: %{text}<br>',
                     name = method))
 
@@ -84,7 +86,7 @@ def update_figure(selected_year, selected_yaxis):
                 'nticks':30
                 },
             yaxis = {
-                'title': header, 
+                'title': dict_yaxis[selected_yaxis], 
                 'showgrid': False,
                 'automargin': True,
                 'rangemode':'tozero'},
